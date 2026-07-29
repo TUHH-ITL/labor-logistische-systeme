@@ -28,8 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV DISPLAY=:1
 RUN echo 'export DISPLAY=:1' >> /home/ubuntu/.bashrc
 
-COPY --chown=ubuntu:ubuntu vnc-xstartup /home/ubuntu/.vnc/xstartup
-COPY vnc-entrypoint.sh /usr/local/bin/vnc-entrypoint.sh
+COPY --chown=ubuntu:ubuntu docker/vnc-xstartup /home/ubuntu/.vnc/xstartup
+COPY docker/vnc-entrypoint.sh /usr/local/bin/vnc-entrypoint.sh
 RUN chmod +x /home/ubuntu/.vnc/xstartup /usr/local/bin/vnc-entrypoint.sh
 
 USER ubuntu

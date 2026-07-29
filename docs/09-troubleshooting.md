@@ -51,6 +51,21 @@ wsl --shutdown
 
 ---
 
+## Unter macOS lädt `http://localhost:6080` nicht (noVNC)
+
+`docker compose exec ros bash` funktioniert, im Browser tut sich bei
+`http://localhost:6080` aber nichts. Prüfen mit `docker compose ps`, ob der
+Container überhaupt läuft.
+
+Ursache ist praktisch immer, dass **Enable host networking** in Docker
+Desktop nicht aktiviert ist, siehe `docs/03-setup-macos.md`, Schritt 1. Ohne
+diese Einstellung landet `network_mode: host` nur im Netz der
+Docker-Desktop-VM und nie beim eigentlichen Mac. Unter *Settings, Resources,
+Network* aktivieren, *Apply & restart*, danach `docker compose down &&
+docker compose up -d`.
+
+---
+
 ## ros2 topic list zeigt nichts, obwohl eine Node läuft
 
 Fast immer eine von drei Ursachen.

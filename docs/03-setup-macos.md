@@ -29,6 +29,12 @@ Nach der Installation unter *Settings, Resources* die Zuweisung erhöhen.
 Empfohlen sind mindestens 8 GB Arbeitsspeicher und 60 GB Disk Image Size.
 Mit den Voreinstellungen bricht der Gazebo-Start regelmäßig ab.
 
+**Wichtig, sonst bleibt noVNC unerreichbar.** Unter *Settings, Resources,
+Network* den Schalter **Enable host networking** aktivieren und mit *Apply
+& restart* bestätigen. Ohne diese Einstellung landet `network_mode: host`
+aus der `docker-compose.yml` nur im Netz der Docker-Desktop-VM, und
+`http://localhost:6080` aus Schritt 3 antwortet nicht.
+
 Test im Terminal.
 
 ```bash
