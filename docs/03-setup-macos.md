@@ -54,9 +54,11 @@ komplette Linux-Desktop im Browser läuft.
 
 Dafür in der `.env` setzen.
 
-```
+```dotenv
 IMAGE_TAG=jazzy-vnc
 ```
+
+Wer zusätzlich mit Gazebo simuliert, setzt stattdessen `IMAGE_TAG=jazzy-vnc-sim`.
 
 Starten.
 
