@@ -1,0 +1,50 @@
+# Basis-Image für das Seminar "Mobile Robotik in der Intralogistik"
+# ROS 2 Jazzy auf Ubuntu 24.04 (Noble)
+#
+# WICHTIG: Die ROS-Version muss exakt der Version auf dem TurtleBot entsprechen.
+# Falls die Roboter auf Humble laufen, hier auf "ros:humble-ros-base" wechseln
+# und alle Paketnamen von ros-jazzy-* auf ros-humble-* ändern.
+
+FROM ros:jazzy-ros-base
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# --- ROS- und Systempakete ---------------------------------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ros-jazzy-desktop \
+      ros-jazzy-navigation2 \
+      ros-jazzy-nav2-bringup \
+      ros-jazzy-slam-toolbox \
+      ros-jazzy-turtlebot4-desktop \
+      ros-jazzy-turtlebot4-navigation \
+      ros-jazzy-apriltag-ros \
+      ros-jazzy-image-pipeline \
+      ros-jazzy-camera-calibration \
+      ros-jazzy-teleop-twist-keyboard \
+      ros-jazzy-rmw-fastrtps-cpp \
+      python3-colcon-common-extensions \
+      python3-rosdep \
+      python3-pip \
+      python3-venv \
+      git nano vim tmux less \
+      iputils-ping iproute2 net-tools \
+      sudo \
+ && rm -rf /var/lib/apt/lists/*
+
+# --- Benutzer ----------------------------------------------------------------
+# Das Ubuntu-24.04-Basisimage bringt bereits den Benutzer "ubuntu" mit UID 1000
+# mit. Diese UID entspricht dem ersten Benutzerkonto auf einem normalen
+# Linux-Rechner, dadurch gehören im Container erzeugte Dateien auf dem Host
+# nicht root.
+RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu \
+ && chmod 0440 /etc/sudoers.d/ubuntu
+
+USER ubuntu
+WORKDIR /home/ubuntu/ws
+
+RUN mkdir -p /home/ubuntu/ws/src \
+ && echo 'source /opt/ros/jazzy/setup.bash' >> /home/ubuntu/.bashrc \
+ && echo '[ -f /home/ubuntu/ws/install/setup.bash ] && source /home/ubuntu/ws/install/setup.bash' >> /home/ubuntu/.bashrc \
+ && echo 'export PS1="\[\e[1;32m\][seminar]\[\e[0m\] \w\$ "' >> /home/ubuntu/.bashrc
+
+CMD ["bash"]

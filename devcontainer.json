@@ -1,0 +1,29 @@
+{
+  "name": "Mobile Robotik in der Intralogistik",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "ros",
+  "workspaceFolder": "/home/ubuntu/ws",
+  "remoteUser": "ubuntu",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-iot.vscode-ros",
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "files.associations": {
+          "*.launch.py": "python",
+          "*.urdf": "xml",
+          "*.xacro": "xml",
+          "*.sdf": "xml"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# Simulations-Image, ergänzt das Basis-Image um Gazebo Harmonic
+# Nur nötig für Gruppen, die ohne echten Roboter arbeiten.
+#
+# ARG BASE_IMAGE wird von der CI gesetzt, damit lokal und in der Pipeline
+# dasselbe Basis-Image verwendet wird.
+
+ARG BASE_IMAGE=ghcr.io/tuhh-itl/seminar-mrl:jazzy-base
+FROM ${BASE_IMAGE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+USER root
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ros-jazzy-ros-gz \
+      ros-jazzy-turtlebot4-simulator \
+      ros-jazzy-irobot-create-nodes \
+      mesa-utils \
+ && rm -rf /var/lib/apt/lists/*
+
+USER ubuntu
+WORKDIR /home/ubuntu/ws
+CMD ["bash"]

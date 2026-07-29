@@ -1,0 +1,43 @@
+services:
+  ros:
+    image: ghcr.io/tuhh-itl/seminar-mrl:${IMAGE_TAG:-jazzy-base}
+    container_name: seminar-ros
+
+    # host-Networking ist Voraussetzung dafür, dass DDS den Roboter im WLAN
+    # findet. Unter Linux funktioniert das nativ, unter Docker Desktop
+    # (Windows/macOS) nur eingeschränkt. Siehe docs/09-troubleshooting.md
+    network_mode: host
+    ipc: host
+
+    environment:
+      # Muss pro Gruppe unterschiedlich sein, sonst sehen alle Gruppen
+      # gegenseitig ihre Topics. Wird in der .env gesetzt.
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:?ROS_DOMAIN_ID fehlt, bitte .env anlegen}
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+      DISPLAY: ${DISPLAY:-:0}
+      QT_X11_NO_MITSHM: 1
+      LIBGL_ALWAYS_SOFTWARE: ${LIBGL_ALWAYS_SOFTWARE:-0}
+
+    volumes:
+      # Nur src wird auf den Host gespiegelt. Der eigene Code überlebt damit
+      # jedes Löschen und Neubauen des Containers.
+      - ./ws/src:/home/ubuntu/ws/src
+
+      # build und install liegen bewusst in Named Volumes und nicht auf dem
+      # Host. Compiler-Artefakte im gemounteten Verzeichnis führen sonst zu
+      # schwer auffindbaren Fehlern beim Wechsel zwischen Host und Container.
+      - ws_build:/home/ubuntu/ws/build
+      - ws_install:/home/ubuntu/ws/install
+      - ws_log:/home/ubuntu/ws/log
+
+      # Grafische Ausgabe (RViz, Gazebo, Kamera-Kalibrierung)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    stdin_open: true
+    tty: true
+    command: bash
+
+volumes:
+  ws_build:
+  ws_install:
+  ws_log:
