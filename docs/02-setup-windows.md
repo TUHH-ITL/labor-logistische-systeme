@@ -145,8 +145,8 @@ beschrieben, nicht unter `/mnt/c/...`.
 
 ```bash
 cd ~
-git clone https://github.com/tuhh-itl/seminar-mrl.git
-cd seminar-mrl
+git clone https://github.com/tuhh-itl/labor-logistische-systeme.git
+cd labor-logistische-systeme
 ```
 
 ## Schritt 6, Konfiguration anlegen

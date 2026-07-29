@@ -4,7 +4,7 @@
 # ARG BASE_IMAGE wird von der CI gesetzt, damit lokal und in der Pipeline
 # dasselbe Basis-Image verwendet wird.
 
-ARG BASE_IMAGE=ghcr.io/tuhh-itl/seminar-mrl:jazzy-base
+ARG BASE_IMAGE=ghcr.io/tuhh-itl/labor-logistische-systeme:jazzy-base
 FROM ${BASE_IMAGE}
 
 ARG DEBIAN_FRONTEND=noninteractive

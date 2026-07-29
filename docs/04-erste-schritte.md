@@ -10,8 +10,8 @@ Einmal durchgearbeitet dauert das ungefähr 20 Minuten.
 Der Container ist die Werkzeugkiste, nicht der Arbeitsplatz für eure Dateien.
 
 ```
-Auf eurem Rechner              Im Container
-seminar-mrl/ws/src/     <-->   /home/ubuntu/ws/src/
+Auf eurem Rechner                          Im Container
+labor-logistische-systeme/ws/src/     <-->   /home/ubuntu/ws/src/
 ```
 
 Diese beiden Verzeichnisse sind dasselbe. Ihr könnt also auf dem Host mit
@@ -24,7 +24,7 @@ Stolperstein, siehe unten.
 ## Schritt 1, Umgebung starten
 
 ```bash
-cd ~/seminar-mrl
+cd ~/labor-logistische-systeme
 ./run.sh
 ```
 
@@ -124,7 +124,7 @@ ros2 run mein_paket hallo_node
 In einem zweiten Terminal auf dem Host.
 
 ```bash
-cd ~/seminar-mrl
+cd ~/labor-logistische-systeme
 docker compose exec ros bash
 ros2 topic echo /hallo
 ```

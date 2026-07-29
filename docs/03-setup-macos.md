@@ -39,8 +39,8 @@ docker run --rm hello-world
 
 ```bash
 cd ~
-git clone https://github.com/tuhh-itl/seminar-mrl.git
-cd seminar-mrl
+git clone https://github.com/tuhh-itl/labor-logistische-systeme.git
+cd labor-logistische-systeme
 cp .env.example .env
 ```
 

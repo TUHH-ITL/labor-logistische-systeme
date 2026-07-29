@@ -1,6 +1,6 @@
 services:
   ros:
-    image: ghcr.io/tuhh-itl/seminar-mrl:${IMAGE_TAG:-jazzy-base}
+    image: ghcr.io/tuhh-itl/labor-logistische-systeme:${IMAGE_TAG:-jazzy-base}
     container_name: seminar-ros
 
     # host-Networking ist Voraussetzung dafür, dass DDS den Roboter im WLAN
