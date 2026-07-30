@@ -10,13 +10,19 @@ Einmal durchgearbeitet dauert das ungefähr 20 Minuten.
 Der Container ist die Werkzeugkiste, nicht der Arbeitsplatz für eure Dateien.
 
 ```
-Auf eurem Rechner                          Im Container
+Im Host-Dateisystem                        Im Container
 labor-logistische-systeme/ws/src/     <-->   /home/ubuntu/ws/src/
 ```
 
 Diese beiden Verzeichnisse sind dasselbe. Ihr könnt also auf dem Host mit
 VS Code editieren und im Container bauen und ausführen. Euer Code überlebt
 jedes Löschen des Containers.
+
+**Unter Windows** ist "Host-Dateisystem" das Linux-Dateisystem in WSL, nicht
+das normale Windows-Dateisystem. Die Datei taucht also nicht unter
+`C:\Users\...` auf, sondern nur unter `~/labor-logistische-systeme/ws/src`
+in Ubuntu beziehungsweise über `\\wsl$\Ubuntu-24.04\...` in Windows, siehe
+`docs/02-setup-windows.md`, Schritt 4.
 
 Alles andere im Container ist flüchtig. Das ist wichtig und der häufigste
 Stolperstein, siehe unten.
