@@ -17,8 +17,15 @@ if command -v xhost >/dev/null 2>&1; then
   xhost +local:docker >/dev/null 2>&1 || true
 fi
 
+# Unter WSL die GPU durchreichen, sonst rendert Gazebo auf der CPU. Das Gerät
+# gibt es nur dort, unter Linux und macOS bleibt es bei der Standardkonfiguration.
+COMPOSE_FILES=(-f docker-compose.yml)
+if [ -e /dev/dxg ]; then
+  COMPOSE_FILES+=(-f docker-compose.wsl-gpu.yml)
+fi
+
 # Container starten, falls er nicht schon läuft.
-docker compose up -d
+docker compose "${COMPOSE_FILES[@]}" up -d
 
 echo
 echo "Umgebung läuft. Weitere Terminals öffnen mit:"

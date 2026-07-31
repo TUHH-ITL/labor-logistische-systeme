@@ -36,7 +36,7 @@ Dann bei der Anmeldung "Ubuntu on Xorg" wählen.
 **OpenGL-Fehler**, etwa `Could not initialize GLX` oder ein schwarzes
 RViz-Fenster. In der `.env` setzen.
 
-```
+```dotenv
 LIBGL_ALWAYS_SOFTWARE=1
 ```
 
@@ -47,6 +47,74 @@ Danach `docker compose down && ./run.sh`. Läuft langsamer, aber stabil.
 ```powershell
 wsl --update
 wsl --shutdown
+```
+
+---
+
+## Gazebo ruckelt stark, Simulation ist sehr langsam
+
+Prüfen, ob überhaupt eine GPU genutzt wird (`mesa-utils` ist im
+Simulations-Image installiert).
+
+```bash
+glxinfo | grep "OpenGL renderer"
+```
+
+Steht dort **llvmpipe** oder **softpipe**, läuft alles über
+Software-Rendering, das erklärt die Langsamkeit direkt.
+
+**Unter Windows/WSL** übernimmt `run.sh` die GPU-Durchreichung automatisch,
+sobald es das WSL-GPU-Gerät `/dev/dxg` findet, siehe
+`docker-compose.wsl-gpu.yml`. Zeigt `glxinfo -B` trotzdem `llvmpipe`, prüft
+der Reihe nach.
+
+1. **Startet ihr über `./run.sh`?** Ein direktes `docker compose up` lädt die
+   GPU-Ergänzung nicht mit.
+2. **Falsche Grafikkarte gewählt.** Auf Notebooks mit zwei Grafikkarten nimmt
+   WSL sonst die sparsame integrierte. `GPU_ADAPTER` in der `.env` setzen,
+   siehe `.env.example`, danach `docker compose down && ./run.sh`. Zeigt
+   `glxinfo -B` dann `D3D12 (Intel...)` statt eurer dedizierten Karte, passt
+   der Name nicht.
+3. **Sieht WSL die GPU überhaupt?** Außerhalb des Containers, im
+   Ubuntu-Terminal.
+
+   ```bash
+   GALLIUM_DRIVER=d3d12 glxinfo -B
+   ```
+
+   Steht dort `Accelerated: no`, liegt es nicht am Container, sondern an
+   WSL selbst. Dann in PowerShell `wsl --update`, danach `wsl --shutdown`,
+   und die Grafiktreiber unter Windows aktualisieren, am besten direkt von
+   der Herstellerseite statt über Windows Update.
+
+Wichtig, `GALLIUM_DRIVER=d3d12` ist bei aktuellem Mesa zwingend. Ohne die
+Variable fällt Mesa auf `llvmpipe` zurück, obwohl die GPU verfügbar wäre.
+
+**Unter macOS** ist Software-Rendering unvermeidbar, Docker Desktop gibt
+dort keine GPU an Container weiter, siehe `docs/03-setup-macos.md`.
+
+**Unter macOS** ist Software-Rendering unvermeidbar, Docker Desktop gibt
+dort keine GPU an Container weiter, siehe `docs/03-setup-macos.md`.
+
+---
+
+## Roboter bewegt sich nicht, obwohl Teleop läuft
+
+`ros2 topic echo /cmd_vel` zeigt bei Tastendruck nichts an, obwohl
+`teleop_twist_keyboard` läuft und die Geschwindigkeit ändert.
+
+Ursache ist ein Typkonflikt auf demselben Topic-Namen. Der TurtleBot4 ist
+ros2_control-basiert und erwartet auf `/cmd_vel` den Typ
+`geometry_msgs/msg/TwistStamped`. `teleop_twist_keyboard` sendet ohne
+Zusatzparameter aber das ältere `geometry_msgs/msg/Twist`. Gleicher
+Topic-Name, unterschiedlicher Typ, ROS 2 behandelt das als inkompatibel.
+
+Prüfen mit `ros2 topic info /cmd_vel --verbose`, welcher Typ vom
+Fahr-Controller (`motion_control`) abonniert wird. Fix, `teleop_twist_keyboard`
+mit gestempelten Nachrichten starten.
+
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true -p frame_id:=base_link
 ```
 
 ---

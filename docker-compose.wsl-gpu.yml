@@ -1,0 +1,30 @@
+# GPU-Beschleunigung unter Windows/WSL 2.
+#
+# Diese Datei ergänzt docker-compose.yml und wird nur unter WSL geladen,
+# run.sh erkennt das automatisch am Gerät /dev/dxg. Unter Linux und macOS
+# gibt es weder /dev/dxg noch /usr/lib/wsl, dort würde der Start damit
+# fehlschlagen, deshalb liegt das bewusst nicht in der docker-compose.yml.
+#
+# Ohne diese Ergänzung rendert Gazebo über llvmpipe auf der CPU und ruckelt
+# entsprechend.
+
+services:
+  ros:
+    devices:
+      # GPU-Paravirtualisierung von WSL
+      - /dev/dxg
+
+    volumes:
+      # Die GPU-Bibliotheken stellt Windows über WSL bereit
+      - /usr/lib/wsl:/usr/lib/wsl
+
+    environment:
+      LD_LIBRARY_PATH: /usr/lib/wsl/lib
+
+      # Ohne diese Variable wählt Mesa 25 den Software-Rasterizer llvmpipe,
+      # obwohl die GPU verfügbar ist.
+      GALLIUM_DRIVER: d3d12
+
+      # Auf Notebooks mit zwei Grafikkarten wählt WSL sonst die schwächere
+      # integrierte GPU. Wert in der .env setzen, siehe .env.example.
+      MESA_D3D12_DEFAULT_ADAPTER_NAME: ${GPU_ADAPTER:-}

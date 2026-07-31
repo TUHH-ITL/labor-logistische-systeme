@@ -17,6 +17,7 @@ Sucht euch die Anleitung für euer Betriebssystem.
 Danach für alle gleich.
 
 - [docs/04-erste-schritte.md](docs/04-erste-schritte.md), erstes eigenes Paket
+- [docs/05-simulation.md](docs/05-simulation.md), turtlesim und Gazebo mit TurtleBot4
 - [docs/09-troubleshooting.md](docs/09-troubleshooting.md), wenn etwas klemmt
 
 **Bringt das Setup fertig zum ersten Termin mit.** Wenn es klemmt, meldet euch
