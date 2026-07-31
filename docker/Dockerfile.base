@@ -42,7 +42,7 @@ RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu \
 USER ubuntu
 WORKDIR /home/ubuntu/ws
 
-RUN mkdir -p /home/ubuntu/ws/src \
+RUN mkdir -p /home/ubuntu/ws/src /home/ubuntu/ws/build /home/ubuntu/ws/install /home/ubuntu/ws/log \
  && echo 'source /opt/ros/jazzy/setup.bash' >> /home/ubuntu/.bashrc \
  && echo '[ -f /home/ubuntu/ws/install/setup.bash ] && source /home/ubuntu/ws/install/setup.bash' >> /home/ubuntu/.bashrc \
  && echo 'export PS1="\[\e[1;32m\][seminar]\[\e[0m\] \w\$ "' >> /home/ubuntu/.bashrc

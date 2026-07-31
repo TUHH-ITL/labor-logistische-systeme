@@ -48,8 +48,12 @@ sehen könnt.
 
 ## Schritt 3, Eine Node schreiben
 
-```bash
-nano ~/ws/src/mein_paket/mein_paket/hallo_node.py
+Am einfachsten in VS Code, siehe `docs/02-setup-windows.md`, Schritt 11
+(unter Linux und macOS analog mit `code .` im Repo-Verzeichnis). Legt darin
+folgende Datei an, sie existiert noch nicht.
+
+```text
+~/ws/src/mein_paket/mein_paket/hallo_node.py
 ```
 
 Inhalt.
