@@ -25,6 +25,33 @@ vorher, damit wir die Zeit im Seminar nicht mit Installationen verbringen.
 
 ---
 
+## Reicht mein Rechner?
+
+Kurz gesagt, für den Großteil des Seminars genügt ein normaler Laptop. Nur
+die Visualisierung der 3D-Simulation ist anspruchsvoll und diese ist nicht zwingend erforderlich.
+
+| | ROS-Grundlagen, eigene Nodes, RViz | Gazebo-Simulation |
+| --- | --- | --- |
+| Arbeitsspeicher | 8 GB | 16 GB |
+| Freier Speicherplatz | 25 GB | 40 GB |
+| Grafikkarte | egal, integriert reicht | dedizierte GPU empfohlen |
+
+Ein Internetzugang ist einmalig für den Download des Images nötig, im
+Uni-WLAN kann das eine Weile dauern, insbesondere wenn alle Studierenden gleichzeitig das Image herunterladen.
+
+**Ohne dedizierte Grafikkarte** läuft Gazebo trotzdem, rendert dann aber auf
+dem Prozessor und ruckelt entsprechend. Zum Ausprobieren reicht das, für
+längeres Arbeiten wie das Erstellen einer Karte wird es zäh. Unter Linux und
+Windows reicht `run.sh` eine vorhandene GPU automatisch an den Container
+durch, unter macOS ist Software-Rendering technisch nicht zu umgehen.
+
+**Wenn euer Rechner nicht mitkommt**, meldet euch rechtzeitig bei der
+Seminarleitung. Dann bekommt ihr einen Leih-Laptop. Für die Termine mit den echten Robotern
+ist die Verbindung mit NoMachine zu den Robotern ohnehin für alle der vorgesehene Weg, siehe
+[docs/09-troubleshooting.md](docs/09-troubleshooting.md).
+
+---
+
 ## Aufbau des Repositories
 
 ```
@@ -48,14 +75,6 @@ labor-logistische-systeme/
 docker compose exec ros bash  # weiteres Terminal
 docker compose down           # stoppen
 ```
-
----
-
-## Systemvoraussetzungen
-
-- 25 GB freier Speicherplatz, mit Simulation 40 GB
-- 8 GB Arbeitsspeicher, mit Simulation 16 GB empfohlen
-- Internetzugang für den einmaligen Download des Images
 
 ---
 

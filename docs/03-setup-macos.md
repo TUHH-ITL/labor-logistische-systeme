@@ -17,6 +17,9 @@ Für die Robotertermine ab Ende November plant bitte fest mit einem
 Leih-Laptop oder mit NoMachine auf einem Laborrechner. Meldet euch dafür
 rechtzeitig bei der Seminarleitung.
 
+Was euer Rechner an Speicher und Platz mitbringen muss, steht in der
+`README.md` im Abschnitt "Reicht mein Rechner?".
+
 ---
 
 ## Schritt 1, Docker Desktop installieren

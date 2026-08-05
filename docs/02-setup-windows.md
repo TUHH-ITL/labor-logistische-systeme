@@ -7,6 +7,10 @@ und grafische Programme wie RViz funktionieren ohne Zusatzsoftware.
 Voraussetzung ist Windows 10 ab Version 2004 oder Windows 11, dazu
 Administratorrechte auf dem eigenen Rechner.
 
+Für die Grundlagen genügt ein normaler Laptop, anspruchsvoll ist nur die
+3D-Simulation. Was euer Rechner können muss und was gilt, wenn er das nicht
+schafft, steht in der `README.md` im Abschnitt "Reicht mein Rechner?".
+
 > **Einschränkung, bitte vorher lesen.**
 > Für die Termine mit den echten TurtleBots ist Windows mit Docker Desktop
 > keine verlässliche Grundlage. Der Container läuft dort in einer virtuellen
@@ -15,6 +19,25 @@ Administratorrechte auf dem eigenen Rechner.
 > dieses Setup vollständig. Ab der Ausgabe der Roboter arbeitet ihr entweder
 > an einem Leih-Laptop mit Linux oder per NoMachine auf einem Laborrechner.
 > Details in `docs/09-troubleshooting.md`.
+
+---
+
+## Drei Terminals, bitte nicht verwechseln
+
+Im Laufe der Anleitung arbeitet ihr mit drei verschiedenen Kommandozeilen.
+Sie sehen ähnlich aus, sind aber drei getrennte Welten. Wenn ein Befehl
+"command not found" meldet, sitzt ihr meistens einfach im falschen Terminal.
+
+| Gemeint ist | So erkennt ihr es | Dafür ist es da |
+| --- | --- | --- |
+| **PowerShell** | blauer Prompt, endet mit `>` | Windows-Befehle wie `wsl` |
+| **Ubuntu-Terminal** | Prompt `benutzer@rechner:~$` | Linux, `git`, `docker` |
+| **Container-Terminal** | Prompt `[seminar] ~/ws$` | ROS-Befehle wie `ros2` |
+
+Das Container-Terminal öffnet sich im Ubuntu-Terminal, sobald ihr `./run.sh`
+startet. Ihr verlasst es wieder mit `exit` und landet dann im
+Ubuntu-Terminal, aus dem ihr gekommen seid. `exit` beendet dabei nur eure
+Shell, der Container selbst läuft weiter.
 
 ---
 
@@ -79,9 +102,13 @@ und mit *Apply & restart* bestätigen, ein Neuinstallieren ist nicht nötig.
 
 ## Schritt 3, Ins Linux wechseln
 
-Ab hier findet alles im Ubuntu-Terminal statt, nicht in PowerShell. Das
-Ubuntu-Terminal öffnet ihr über das Startmenü mit "Ubuntu" oder in Windows
-Terminal über den Reiter-Pfeil.
+Ab hier findet alles im Ubuntu-Terminal statt, nicht in PowerShell. Ihr
+öffnet es über das Startmenü, indem ihr "Ubuntu" tippt und die App
+"Ubuntu 24.04" startet. Der Prompt sieht dann so aus.
+
+```text
+benutzername@rechnername:~$
+```
 
 **Docker Desktop muss dafür laufen.** Ein bloß installiertes, aber nicht
 gestartetes Docker Desktop reicht nicht, die WSL-Integration wirkt erst,
@@ -98,39 +125,27 @@ docker run --rm hello-world
 Kommt stattdessen `permission denied while trying to connect to the Docker
 daemon socket`, wurde die WSL-Integration gerade erst aktiviert und die
 schon offene Ubuntu-Sitzung kennt die neue Gruppenmitgliedschaft in der
-Gruppe `docker` noch nicht. Prüfen mit.
+Gruppe `docker` noch nicht. Prüfen mit diesem Befehl:
 
 ```bash
 groups
 ```
 
 Steht dort kein `docker`, hilft `newgrp docker` in der laufenden Sitzung.
-Zuverlässiger ist, alle Ubuntu-Terminalfenster zu schließen und in
-**PowerShell**.
+Zuverlässiger ist es, alle Ubuntu-Terminalfenster zu schließen und in
+**PowerShell** diesen Befehl auszuführen:
 
 ```powershell
 wsl --shutdown
 ```
 
-auszuführen, danach das Ubuntu-Terminal neu öffnen. Ein bloßes Schließen des
+Danach das Ubuntu-Terminal neu öffnen. Ein bloßes Schließen des
 Terminalfensters reicht bei WSL oft nicht, weil die Distribution im
 Hintergrund weiterläuft.
 
 Funktioniert das, ist Docker in WSL nutzbar.
 
-## Schritt 4, Wichtig, richtiges Dateisystem verwenden
-
-Das Repository muss **im Linux-Dateisystem** liegen, also unterhalb von
-`/home/<benutzername>`. Nicht unter `/mnt/c/Users/...`.
-
-Auf `/mnt/c` sind Dateizugriffe um ein Vielfaches langsamer, und die
-Rechteverwaltung passt nicht zu Linux. Ein `colcon build` dauert dort statt
-einer Minute schnell zehn. (`colcon build` ist der Befehl, um Software zu kompilieren.)
-
-Auf die Dateien kommt ihr aus Windows trotzdem bequem, im Explorer über die
-Adresse `\\wsl$\Ubuntu-24.04\home\<benutzername>`.
-
-## Schritt 5, Repository klonen
+## Schritt 4, Repository klonen
 
 Git ist im frischen WSL-Ubuntu nicht immer vorinstalliert, im Zweifel
 nachinstallieren.
@@ -140,8 +155,7 @@ sudo apt-get update
 sudo apt-get install -y git
 ```
 
-Dann das Repository klonen, wichtig **im Home-Verzeichnis** wie in Schritt 4
-beschrieben, nicht unter `/mnt/c/...`.
+Dann das Repository klonen.
 
 ```bash
 cd ~
@@ -149,7 +163,39 @@ git clone https://github.com/tuhh-itl/labor-logistische-systeme.git
 cd labor-logistische-systeme
 ```
 
-## Schritt 6, Konfiguration anlegen
+`cd ~` wechselt in euer Linux-Home-Verzeichnis, das vollständig
+`/home/<benutzername>` heißt. Genau dort muss das Repository liegen, und
+**nicht** unter `/mnt/c/...`.
+
+Der Grund: Ubuntu läuft in WSL mit einem eigenen Linux-Dateisystem. Eure
+Windows-Laufwerke sind darin zusätzlich unter `/mnt/c`, `/mnt/d` und so
+weiter eingehängt. Dateizugriffe über `/mnt/c` sind aber um ein Vielfaches
+langsamer, und die Rechteverwaltung passt nicht zu Linux. Ein `colcon build`
+(der Befehl, mit dem später euer Code kompiliert wird) dauert dort statt
+einer Minute schnell zehn.
+
+### Von Windows aus auf die Dateien zugreifen
+
+Ihr müsst zum Bearbeiten nicht ins Terminal. Öffnet im Windows-Explorer
+diese Adresse.
+
+```text
+\\wsl$\Ubuntu-24.04\home\<benutzername>\labor-logistische-systeme
+```
+
+Das ist **dasselbe Verzeichnis**, in dem ihr eben `git clone` ausgeführt
+habt, nur von Windows aus betrachtet. Es gibt die Dateien also nicht
+doppelt. Was ihr im Explorer ändert, sieht das Ubuntu-Terminal sofort und
+umgekehrt.
+
+| Aus dem Ubuntu-Terminal | Aus dem Windows-Explorer |
+| --- | --- |
+| `~` beziehungsweise `/home/<benutzername>` | `\\wsl$\Ubuntu-24.04\home\<benutzername>` |
+
+Tipp: Die Adresse einmal im Explorer öffnen und als Favorit anheften, dann
+müsst ihr sie nicht jedes Mal tippen.
+
+## Schritt 5, Konfiguration anlegen
 
 ```bash
 cp .env.example .env
@@ -162,7 +208,7 @@ steht als Kommentar in der Datei. Speichern mit `Strg+O`, schließen mit
 
 Wer mit Simulation arbeitet, setzt zusätzlich `IMAGE_TAG=jazzy-sim`.
 
-## Schritt 7, Image herunterladen
+## Schritt 6, Image herunterladen
 
 ```bash
 docker compose pull
@@ -172,7 +218,7 @@ Das Basis-Image ist ungefähr 5 GB groß, das Simulations-Image ungefähr 10 GB.
 Das dauert im Uni-WLAN spürbar, ist aber einmalig. Das Image wird **nicht**
 selbst gebaut, es kommt fertig aus der GitHub Container Registry.
 
-## Schritt 8, Umgebung starten
+## Schritt 7, Umgebung starten
 
 ```bash
 chmod +x run.sh
@@ -182,7 +228,7 @@ chmod +x run.sh
 Der Prompt wechselt zu `[seminar] ~/ws$`. Ab hier befinden sich alle Befehle
 im Container.
 
-## Schritt 9, Funktionstest
+## Schritt 8, Funktionstest
 
 Im laufenden Container.
 
@@ -190,10 +236,21 @@ Im laufenden Container.
 ros2 run demo_nodes_cpp talker
 ```
 
-Ein **zweites** Terminal auf dem Host öffnen, ins Repo wechseln und dort.
+Dieser Prozess läuft jetzt dauerhaft und blockiert das Terminal, das ist so
+gewollt. Öffnet deshalb ein **zweites Ubuntu-Terminal** über das Startmenü.
+Dort müsst ihr zuerst wieder ins Repo-Verzeichnis wechseln, denn jedes neue
+Terminal startet im Home-Verzeichnis, und `docker compose` funktioniert nur
+dort, wo die `docker-compose.yml` liegt.
 
 ```bash
+cd ~/labor-logistische-systeme
 docker compose exec ros bash
+```
+
+Der Prompt wechselt wieder zu `[seminar] ~/ws$`, ihr seid also im selben
+Container wie im ersten Terminal. Dort dann.
+
+```bash
 ros2 run demo_nodes_py listener
 ```
 
@@ -202,7 +259,7 @@ funktioniert, ist die Installation vollständig.
 
 Beide Prozesse mit `Strg+C` beenden.
 
-## Schritt 10, Grafiktest
+## Schritt 9, Grafiktest
 
 ```bash
 rviz2
@@ -213,12 +270,25 @@ Abschnitt "Grafische Programme" weiter unten. Schlägt das mit einer
 Fehlermeldung zu `DISPLAY` oder OpenGL fehl, siehe `docs/09-troubleshooting.md`,
 Abschnitt "Grafische Programme starten nicht".
 
-## Schritt 11, VS Code anbinden, empfohlen
+## Schritt 10, VS Code anbinden, empfohlen
 
 VS Code unter Windows installieren und die Erweiterung **WSL** von Microsoft
-hinzufügen. Danach im Ubuntu-Terminal im Repo-Verzeichnis.
+hinzufügen.
+
+Der nächste Befehl gehört ins **Ubuntu-Terminal**, nicht ins Container-
+Terminal. Steht euer Prompt noch auf `[seminar] ~/ws$`, verlasst den
+Container zuerst.
 
 ```bash
+exit
+```
+
+Ihr landet wieder im Ubuntu-Terminal. Der Container läuft dabei im
+Hintergrund weiter, ihr könnt ihn jederzeit mit `docker compose exec ros bash`
+erneut betreten. Jetzt ins Repo-Verzeichnis wechseln und VS Code starten.
+
+```bash
+cd ~/labor-logistische-systeme
 code .
 ```
 

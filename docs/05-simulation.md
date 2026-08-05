@@ -82,7 +82,7 @@ Gazebo entsprechend bewegen.
 ## Ressourcen
 
 Gazebo ist deutlich anspruchsvoller als turtlesim. Ruckelt es stark oder
-stürzt der Container ab, meist zu wenig Arbeitsspeicher.
+stürzt der Container ab, liegt das meist an zu wenig Arbeitsspeicher.
 
 - **Docker Desktop** (Windows, macOS), unter *Settings, Resources* mehr
   Arbeitsspeicher zuweisen, mindestens 8 GB, mit Gazebo eher 16 GB.

@@ -10,6 +10,10 @@ Download.
 Benötigt werden ein Rechner mit Ubuntu 24.04, mindestens 25 GB freier
 Speicherplatz und ein Internetzugang.
 
+Für die Grundlagen genügt ein normaler Laptop, anspruchsvoll ist nur die
+3D-Simulation. Was euer Rechner können muss und was gilt, wenn er das nicht
+schafft, steht in der `README.md` im Abschnitt "Reicht mein Rechner?".
+
 ---
 
 ## Schritt 1, Docker installieren

@@ -9,7 +9,7 @@ Einmal durchgearbeitet dauert das ungefähr 20 Minuten.
 
 Der Container ist die Werkzeugkiste, nicht der Arbeitsplatz für eure Dateien.
 
-```
+```text
 Im Host-Dateisystem                        Im Container
 labor-logistische-systeme/ws/src/     <-->   /home/ubuntu/ws/src/
 ```
@@ -43,12 +43,21 @@ cd ~/ws/src
 ros2 pkg create --build-type ament_python mein_paket --dependencies rclpy std_msgs
 ```
 
-Es entsteht ein Verzeichnis `mein_paket`, das ihr auch auf dem Host sofort
-sehen könnt.
+Es entsteht ein Verzeichnis `mein_paket`. Angelegt habt ihr es im Container,
+sichtbar ist es aber sofort überall, weil `ws/src` nur einmal existiert und
+in den Container hineingereicht wird.
+
+| Wo ihr nachschaut | Pfad |
+| --- | --- |
+| Container-Terminal | `~/ws/src/mein_paket` |
+| Ubuntu-Terminal | `~/labor-logistische-systeme/ws/src/mein_paket` |
+| Windows-Explorer | `\\wsl$\Ubuntu-24.04\home\<benutzername>\labor-logistische-systeme\ws\src\mein_paket` |
+
+Das sind drei Sichten auf dieselben Dateien, keine Kopien.
 
 ## Schritt 3, Eine Node schreiben
 
-Am einfachsten in VS Code, siehe `docs/02-setup-windows.md`, Schritt 11
+Am einfachsten in VS Code, siehe `docs/02-setup-windows.md`, Schritt 10
 (unter Linux und macOS analog mit `code .` im Repo-Verzeichnis). Legt darin
 folgende Datei an, sie existiert noch nicht.
 
@@ -97,15 +106,32 @@ if __name__ == "__main__":
 
 ## Schritt 4, Einstiegspunkt eintragen
 
-In `~/ws/src/mein_paket/setup.py` den Abschnitt `entry_points` ergänzen.
+Damit ROS eure Node später mit `ros2 run` starten kann, muss sie in
+`~/ws/src/mein_paket/setup.py` eingetragen werden.
+
+Den Abschnitt `entry_points` hat `ros2 pkg create` bereits angelegt, seine
+Liste `console_scripts` ist nur noch leer. Sie steht am Ende der Datei und
+sieht so aus.
 
 ```python
-entry_points={
-    "console_scripts": [
-        "hallo_node = mein_paket.hallo_node:main",
-    ],
-},
+    entry_points={
+        'console_scripts': [
+        ],
+    },
 ```
+
+Ihr ergänzt dort **eine Zeile**, sodass es danach so aussieht.
+
+```python
+    entry_points={
+        'console_scripts': [
+            'hallo_node = mein_paket.hallo_node:main',
+        ],
+    },
+```
+
+Gemeint ist damit: Der Befehl `hallo_node` startet im Modul
+`mein_paket.hallo_node` die Funktion `main`.
 
 ## Schritt 5, Bauen
 
@@ -117,6 +143,18 @@ source install/setup.bash
 
 `--symlink-install` ist im Seminar der Standard. Damit wirken Änderungen an
 bestehenden Python-Dateien sofort, ohne erneutes Bauen.
+
+**Ohne `sudo` ausführen.** Bricht der Befehl mit `Permission denied` ab,
+stammt euer Container noch aus einer älteren Image-Version. `sudo` würde das
+scheinbar beheben, aber Dateien erzeugen, die euch anschließend nicht mehr
+gehören. Richtig ist stattdessen **einmalig**:
+
+```bash
+exit                      # zurück ins Ubuntu-Terminal
+docker compose down -v
+docker compose pull
+./run.sh
+```
 
 Neu bauen müsst ihr trotzdem, wenn ihr.
 
@@ -154,7 +192,8 @@ pip install numpy                       # verschwindet
 Das führt zum typischen Muster "gestern lief es, heute nicht mehr", ohne dass
 jemand einen Zusammenhang sieht. Deklariert Abhängigkeiten stattdessen richtig.
 
-**ROS-Pakete** gehören in `package.xml`.
+**ROS-Pakete** gehören in die `package.xml` eures Pakets, dort zwischen die
+schon vorhandenen `<depend>`-Zeilen.
 
 ```xml
 <depend>apriltag_ros</depend>
@@ -166,20 +205,44 @@ Danach im Container.
 ```bash
 cd ~/ws
 rosdep install --from-paths src --ignore-src -r -y
+colcon build --symlink-install
 ```
 
-**Python-Bibliotheken** gehören in `ws/src/requirements.txt`. Installieren mit.
+**Python-Bibliotheken** gehören in eine Datei `ws/src/requirements.txt`.
+Die gibt es anfangs noch nicht, ihr legt sie beim ersten Bedarf selbst an,
+zum Beispiel in VS Code. Hineingeschrieben wird pro Zeile ein Paketname, so
+wie ihr ihn auch `pip install` übergeben würdet.
+
+```text
+numpy
+matplotlib
+opencv-python==4.10.0.84
+```
+
+Eine Version anzugeben (`==4.10.0.84`) ist optional, sorgt aber dafür, dass
+bei allen in der Gruppe wirklich dasselbe installiert wird. Installiert wird
+daraus mit.
 
 ```bash
 pip install --user -r ~/ws/src/requirements.txt
 ```
+
+**Nach jeder Änderung an `package.xml` neu bauen**, sonst kennt euer
+Workspace die neue Abhängigkeit nicht. Für `requirements.txt` genügt der
+`pip install`-Befehl oben, ein Neubau ist dafür nicht nötig.
 
 Braucht ihr etwas dauerhaft für alle, meldet euch bei der Seminarleitung. Dann
 kommt es ins Image und alle Gruppen haben es nach einem `docker compose pull`.
 
 ## Aufräumen
 
+Diese Befehle gehören ins **Ubuntu-Terminal**, nicht ins Container-Terminal.
+Steht euer Prompt auf `[seminar] ~/ws$`, verlasst den Container zuerst mit
+`exit`, oder nutzt ein zweites Ubuntu-Terminal. Außerdem müsst ihr im
+Repo-Verzeichnis stehen.
+
 ```bash
+cd ~/labor-logistische-systeme
 docker compose down       # Container stoppen, Build bleibt erhalten
 docker compose down -v    # zusätzlich build und install löschen
 ```
