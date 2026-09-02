@@ -35,6 +35,11 @@ Gazebo wagt.
 
 Dafür braucht ihr das Simulations-Image.
 
+> **Nicht auf Macs mit Apple Silicon.** Die Gazebo-Images gibt es nur für
+> Intel-Prozessoren, auf M1 bis M4 scheitert der Download mit `no matching
+> manifest for linux/arm64/v8`. Was ihr stattdessen tun könnt, steht in
+> `docs/03-setup-macos.md`, Abschnitt "Gazebo auf Apple Silicon".
+
 ## Schritt 1, Simulations-Image aktivieren
 
 In der `.env`.

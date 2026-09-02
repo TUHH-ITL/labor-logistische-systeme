@@ -5,6 +5,25 @@ Das Dokument lebt davon.
 
 ---
 
+## Kurz vorweg, "Permission denied" nicht mit sudo erschlagen
+
+Die Versuchung ist groß, bei jedem `Permission denied` einfach `sudo`
+davorzusetzen. Im Seminar macht das die Sache fast immer schlimmer, weil
+danach Dateien root gehören und ihr sie als normaler Benutzer nicht mehr
+bearbeiten könnt. Der Fehler kommt dann später wieder, nur schwerer
+auffindbar.
+
+| Wo der Fehler auftritt | Richtige Lösung |
+| --- | --- |
+| `docker ...` auf dem Host | Benutzer in die Gruppe `docker`, siehe nächster Abschnitt |
+| `colcon build` im Container | Volumes zurücksetzen, siehe "colcon build meldet Permission denied" |
+| `apt-get install` auf dem Host | Hier ist `sudo` richtig und vorgesehen |
+
+Faustregel: `sudo` gehört nur zu den Installationsbefehlen des Setups. Im
+Container und bei allem rund um `colcon` und euren eigenen Code niemals.
+
+---
+
 ## permission denied while trying to connect to the Docker daemon socket
 
 Der Benutzer ist nicht in der Docker-Gruppe oder war es beim Anmelden noch
@@ -33,14 +52,35 @@ echo $DISPLAY      # muss etwas wie :0 oder :1 ausgeben
 Ist `$DISPLAY` leer, läuft eventuell eine Wayland-Sitzung ohne XWayland.
 Dann bei der Anmeldung "Ubuntu on Xorg" wählen.
 
-**OpenGL-Fehler**, etwa `Could not initialize GLX` oder ein schwarzes
-RViz-Fenster. In der `.env` setzen.
+**OpenGL- und Treiberfehler**, etwa `Could not initialize GLX`, ein
+schwarzes RViz-Fenster oder diese Meldungen.
+
+```text
+MESA: error: Failed to query drm device.
+glx: failed to create dri3 screen
+failed to load driver: iris
+```
+
+Der Grafiktreiber des Hosts lässt sich im Container nicht nutzen, häufig bei
+Intel-GPUs, deren Treiber `iris` dort nicht greift. Lösung ist
+Software-Rendering. Dauerhaft in der `.env` im Repo-Verzeichnis setzen.
 
 ```dotenv
 LIBGL_ALWAYS_SOFTWARE=1
 ```
 
-Danach `docker compose down && ./run.sh`. Läuft langsamer, aber stabil.
+Danach im Ubuntu-Terminal `docker compose down && ./run.sh`. Läuft
+langsamer, aber stabil.
+
+Zum schnellen Ausprobieren, ohne die `.env` zu ändern, geht auch einmalig im
+Container.
+
+```bash
+LIBGL_ALWAYS_SOFTWARE=1 rviz2
+```
+
+Die `.bashrc` müsst ihr dafür **nicht** anpassen. Die `.env` genügt, weil
+`docker-compose.yml` die Variable an den Container weitergibt.
 
 **Unter Windows** WSL aktualisieren.
 
@@ -119,18 +159,58 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
 
 ---
 
-## Unter macOS lädt `http://localhost:6080` nicht (noVNC)
+## noVNC zeigt nur eine Dateiliste statt des Desktops
 
-`docker compose exec ros bash` funktioniert, im Browser tut sich bei
-`http://localhost:6080` aber nichts. Prüfen mit `docker compose ps`, ob der
-Container überhaupt läuft.
+Im Browser erscheint "Directory listing for /" mit ein paar HTML-Dateien.
+Das ist kein Fehler, dem Webserver fehlt nur eine Startseite. Ruft die
+vollständige Adresse auf.
 
-Ursache ist praktisch immer, dass **Enable host networking** in Docker
-Desktop nicht aktiviert ist, siehe `docs/03-setup-macos.md`, Schritt 1. Ohne
-diese Einstellung landet `network_mode: host` nur im Netz der
-Docker-Desktop-VM und nie beim eigentlichen Mac. Unter *Settings, Resources,
-Network* aktivieren, *Apply & restart*, danach `docker compose down &&
-docker compose up -d`.
+```text
+http://localhost:6080/vnc.html
+```
+
+---
+
+## `http://localhost:6080/vnc.html` lädt gar nicht (noVNC)
+
+Zuerst prüfen, ob der Container läuft und der Port veröffentlicht ist.
+
+```bash
+cd ~/labor-logistische-systeme
+docker compose ps
+```
+
+In der Spalte PORTS muss `127.0.0.1:6080->6080/tcp` stehen. Fehlt die Zeile
+ganz, wurde die Umgebung ohne die noVNC-Konfiguration gestartet. Das
+passiert, wenn ihr von Hand `docker compose up -d` aufruft statt `./run.sh`.
+Nur `run.sh` lädt die Datei `docker-compose.vnc.yml` dazu, die den Port
+freigibt.
+
+```bash
+docker compose down
+./run.sh
+```
+
+Steht in der `.env` kein `IMAGE_TAG` mit `vnc`, greift die noVNC-Variante
+ebenfalls nicht. Kontrollieren mit `grep IMAGE_TAG .env`, dort muss
+`jazzy-vnc` oder `jazzy-vnc-sim` stehen.
+
+---
+
+## no matching manifest for linux/arm64/v8
+
+```text
+Error response from daemon: no matching manifest for linux/arm64/v8
+in the manifest list entries
+```
+
+Ihr nutzt einen Mac mit Apple Silicon (M1 bis M4) und habt in der `.env`
+einen Image-Tag gesetzt, den es nur für Intel-Prozessoren gibt. Das betrifft
+`jazzy-sim` und `jazzy-vnc-sim`, also die beiden Varianten mit Gazebo.
+
+Setzt in der `.env` stattdessen `IMAGE_TAG=jazzy-vnc`. Alles außer der
+Gazebo-Simulation funktioniert damit normal. Für die Simulationsaufgaben
+siehe `docs/03-setup-macos.md`, Abschnitt "Gazebo auf Apple Silicon".
 
 ---
 
@@ -188,6 +268,29 @@ Endgeräten. Nutzt im Labor ausschließlich das dafür vorgesehene WLAN.
 
 ---
 
+## colcon build meldet Permission denied
+
+```text
+PermissionError: [Errno 13] Permission denied: 'log/build_...'
+```
+
+Euer Container stammt noch aus einer älteren Image-Version, in der die
+Verzeichnisse `build`, `install` und `log` root gehörten. **Nicht mit `sudo`
+bauen**, das erzeugt Dateien, die euch anschließend nicht mehr gehören.
+Stattdessen einmalig im Ubuntu-Terminal.
+
+```bash
+cd ~/labor-logistische-systeme
+docker compose down -v
+docker compose pull
+./run.sh
+```
+
+Danach `colcon build --symlink-install` ohne `sudo` erneut ausführen. `down -v`
+löscht nur Build-Artefakte, euer Quellcode in `ws/src` bleibt erhalten.
+
+---
+
 ## colcon build schlägt nach einem Wechsel des Rechners fehl
 
 Build-Artefakte aus einer anderen Umgebung. Zurücksetzen mit.
@@ -221,6 +324,65 @@ source install/setup.bash
 Sehr wahrscheinlich wurde etwas interaktiv im Container installiert, siehe
 `docs/04-erste-schritte.md`, Abschnitt "Der wichtigste Stolperstein".
 Abhängigkeiten gehören in `package.xml` oder `requirements.txt`.
+
+---
+
+## Der Container beendet sich von selbst
+
+Ihr arbeitet, plötzlich ist die Shell weg oder `ros2`-Befehle laufen ins
+Leere. Zuerst nachsehen, warum.
+
+```bash
+cd ~/labor-logistische-systeme
+docker compose ps -a
+docker inspect seminar-ros --format 'ExitCode={{.State.ExitCode}} OOMKilled={{.State.OOMKilled}}'
+```
+
+Die Ausgabe sagt euch, was los war.
+
+| Ausgabe | Bedeutung | Abhilfe |
+| --- | --- | --- |
+| `OOMKilled=true` oder `ExitCode=137` | Dem Container ging der Arbeitsspeicher aus, typisch bei Gazebo | Docker Desktop mehr RAM zuweisen, siehe unten |
+| `ExitCode=0` | Der Hauptprozess wurde regulär beendet, meist durch `exit` im **allerersten** Terminal oder `Strg+C` bei `docker compose up` ohne `-d` | Mit `./run.sh` neu starten |
+| `ExitCode=130` oder `143` | Von außen abgebrochen, etwa beim Beenden von Docker Desktop | Mit `./run.sh` neu starten |
+
+**Bei zu wenig Arbeitsspeicher**, also der häufigste Fall unter macOS und
+Windows, unter *Settings, Resources* in Docker Desktop mehr zuweisen. Für
+Gazebo sind 16 GB realistisch, mit 8 GB wird es eng. Unter Windows zusätzlich
+die WSL-Grenze in `%UserProfile%\.wslconfig` prüfen, siehe
+`docs/05-simulation.md`, Abschnitt "Ressourcen".
+
+Seit der Einführung der Restart-Policy in der `docker-compose.yml` startet
+der Container nach einem Absturz oder einem Neustart von Docker Desktop von
+selbst wieder. Beendet ihr ihn absichtlich mit `docker compose down` oder
+`docker compose stop`, bleibt er aus.
+
+---
+
+## docker compose up startet nach einem down nicht mehr
+
+Nach `docker compose down` legt der nächste Start keinen Container mehr an,
+oder es kommen Fehler über Netzwerke und Endpunkte, die es angeblich schon
+gibt. Das ist ein bekannter Hänger von Docker Desktop, nicht euer Fehler.
+
+**Docker Desktop komplett neu starten.** Rechtsklick auf das Wal-Icon,
+*Quit Docker Desktop*, dann die App neu öffnen und warten, bis sie
+vollständig gestartet ist. Danach.
+
+```bash
+cd ~/labor-logistische-systeme
+./run.sh
+```
+
+Hilft das nicht, einmal aufräumen und neu starten.
+
+```bash
+docker compose down --remove-orphans
+docker network prune -f
+./run.sh
+```
+
+Euer Quellcode in `ws/src` ist davon nicht betroffen.
 
 ---
 

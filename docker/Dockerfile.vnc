@@ -28,6 +28,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV DISPLAY=:1
 RUN echo 'export DISPLAY=:1' >> /home/ubuntu/.bashrc
 
+# Das Ubuntu-Paket novnc liefert vnc.html, aber keine index.html. Ohne diesen
+# Verweis zeigt der Browser unter http://localhost:6080 nur eine Dateiliste
+# statt des Desktops.
+RUN ln -sf vnc.html /usr/share/novnc/index.html
+
 COPY --chown=ubuntu:ubuntu docker/vnc-xstartup /home/ubuntu/.vnc/xstartup
 COPY docker/vnc-entrypoint.sh /usr/local/bin/vnc-entrypoint.sh
 RUN chmod +x /home/ubuntu/.vnc/xstartup /usr/local/bin/vnc-entrypoint.sh

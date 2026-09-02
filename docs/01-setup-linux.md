@@ -59,8 +59,21 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io \
 sudo usermod -aG docker $USER
 ```
 
-**Danach einmal ab- und wieder anmelden.** Ein neues Terminalfenster reicht
-nicht aus. Alternativ für die laufende Sitzung `newgrp docker` ausführen.
+Damit die neue Gruppenmitgliedschaft wirkt, führt ihr anschließend aus.
+
+```bash
+newgrp docker
+```
+
+Prüfen mit `groups`, dort muss jetzt `docker` auftauchen.
+
+Alternativ könnt ihr euch komplett ab- und wieder anmelden. Ein neues
+Terminalfenster allein reicht nicht. In der Praxis hat sich `newgrp docker`
+als zuverlässiger erwiesen, weil manche Desktop-Umgebungen die Sitzung beim
+Abmelden nicht vollständig beenden.
+
+`sudo` braucht ihr nur für diesen einen Einrichtungsschritt. **Alle
+weiteren Befehle in dieser Anleitung laufen ohne `sudo`.**
 
 ## Schritt 3, Installation prüfen
 
@@ -117,16 +130,31 @@ im Container.
 
 ## Schritt 8, Funktionstest
 
-Im laufenden Container.
+Ihr befindet euch nach Schritt 7 bereits im Container, erkennbar am Prompt
+`[seminar] ~/ws$`. Dort startet ihr den Talker.
 
 ```bash
 ros2 run demo_nodes_cpp talker
 ```
 
-Ein **zweites** Terminal auf dem Host öffnen, ins Repo wechseln und dort.
+Der Prozess läuft jetzt dauerhaft weiter und gibt fortlaufend Nachrichten
+aus. Das ist so gewollt, das Terminal ist damit belegt.
+
+Öffnet deshalb ein **zweites Terminal**. Dieses startet auf dem Host, nicht
+im Container, deshalb müsst ihr dort erst ins Repo-Verzeichnis wechseln und
+euch in den laufenden Container einklinken. `docker compose` funktioniert
+nur dort, wo die `docker-compose.yml` liegt, sonst meldet es
+`no configuration file provided`.
 
 ```bash
+cd ~/labor-logistische-systeme
 docker compose exec ros bash
+```
+
+Der Prompt wechselt zu `[seminar] ~/ws$`, ihr seid also im selben Container.
+**Erst jetzt** könnt ihr den Listener starten.
+
+```bash
 ros2 run demo_nodes_py listener
 ```
 

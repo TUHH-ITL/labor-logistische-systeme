@@ -43,7 +43,18 @@ Shell, der Container selbst läuft weiter.
 
 ## Schritt 1, WSL 2 installieren
 
-PowerShell **als Administrator** öffnen und ausführen.
+PowerShell **als Administrator** öffnen. Dafür im Startmenü "PowerShell"
+tippen, dann Rechtsklick auf *Windows PowerShell* und *Als Administrator
+ausführen*.
+
+Zuerst WSL auf den aktuellen Stand bringen. Das dauert nur einen Moment und
+erspart euch den häufigsten Fehler beim nächsten Befehl.
+
+```powershell
+wsl --update
+```
+
+Dann Ubuntu installieren.
 
 ```powershell
 wsl --install -d Ubuntu-24.04
@@ -53,13 +64,20 @@ Falls Windows danach einen Neustart verlangt, den Rechner neu starten. Das
 ist nicht in jedem Fall nötig, auf manchen Systemen läuft die Einrichtung
 direkt im Anschluss weiter.
 
-Automatisch öffnet sich ein Ubuntu-Fenster und fragt nach einem
-Benutzernamen und einem Passwort. Das ist ein neues Linux-Konto und hat
-nichts mit dem Windows-Konto zu tun. Das Passwort wird beim Tippen nicht
-angezeigt, das ist normal.
+Anschließend müsst ihr ein Linux-Konto anlegen, indem ihr einen
+Benutzernamen und ein Passwort vergebt. Das hat nichts mit eurem
+Windows-Konto zu tun. Das Passwort wird beim Tippen **nicht angezeigt**,
+auch keine Sternchen, das ist normal.
 
-Danach wieder zu **PowerShell** wechseln, nicht im gerade geöffneten
-Ubuntu-Fenster weiterarbeiten, und dort prüfen, dass Version 2 aktiv ist.
+Bei manchen öffnet sich dafür automatisch ein Ubuntu-Fenster, bei anderen
+nicht. Passiert nichts, startet ihr Ubuntu einfach selbst über das Startmenü
+(dort "Ubuntu" tippen) und werdet dann nach Benutzername und Passwort
+gefragt.
+
+Merkt euch diesen Linux-Benutzernamen, ihr braucht ihn später noch.
+
+Danach wieder zu **PowerShell** wechseln, nicht im Ubuntu-Fenster
+weiterarbeiten, und dort prüfen, dass Version 2 aktiv ist.
 
 ```powershell
 wsl -l -v
@@ -71,6 +89,24 @@ Befehl ausführen.
 ```powershell
 wsl --set-version Ubuntu-24.04 2
 ```
+
+> ### 🔧 Wenn es hakt
+>
+> **`Invalid distribution name: 'Ubuntu-24.04'`**
+> Eure WSL-Version ist zu alt und kennt den Namen noch nicht. Einmal
+> `wsl --update` ausführen, danach `wsl --install -d Ubuntu-24.04`
+> wiederholen. Genau dafür steht der Update-Befehl oben.
+>
+> **`Distribution schon vorhanden` oder ähnlich**
+> Ubuntu ist bereits installiert. Prüfen mit `wsl -l -v`. Taucht dort ein
+> Eintrag `Ubuntu` oder `Ubuntu-24.04` mit VERSION 2 auf, seid ihr fertig
+> und könnt zu Schritt 2 weitergehen. Heißt der Eintrag nur `Ubuntu`,
+> verwendet ihr diesen Namen ab jetzt in allen Befehlen statt
+> `Ubuntu-24.04`.
+>
+> **Das Ubuntu-Terminal startet gar nicht mehr**
+> Kommt vor, wenn WSL im Hintergrund hängt. Rechner neu starten, danach
+> geht es in aller Regel wieder.
 
 ## Schritt 2, Docker Desktop installieren
 
@@ -110,11 +146,9 @@ Ab hier findet alles im Ubuntu-Terminal statt, nicht in PowerShell. Ihr
 benutzername@rechnername:~$
 ```
 
-**Docker Desktop muss dafür laufen.** Ein bloß installiertes, aber nicht
-gestartetes Docker Desktop reicht nicht, die WSL-Integration wirkt erst,
-wenn die App im Hintergrund aktiv ist (Wal-Icon in der Taskleiste). Fehlt
-der Befehl `docker` im Ubuntu-Terminal mit dem Hinweis "could not be found
-in this WSL 2 distro", meist Docker Desktop starten.
+**Docker Desktop muss dafür laufen**, also die Windows-App gestartet sein
+(Wal-Icon in der Taskleiste). Ein bloß installiertes Docker Desktop reicht
+nicht, die WSL-Integration wirkt erst, wenn die App aktiv ist.
 
 Test im Ubuntu-Terminal.
 
@@ -122,28 +156,35 @@ Test im Ubuntu-Terminal.
 docker run --rm hello-world
 ```
 
-Kommt stattdessen `permission denied while trying to connect to the Docker
-daemon socket`, wurde die WSL-Integration gerade erst aktiviert und die
-schon offene Ubuntu-Sitzung kennt die neue Gruppenmitgliedschaft in der
-Gruppe `docker` noch nicht. Prüfen mit diesem Befehl:
+Es muss eine Ausgabe erscheinen, die mit "Hello from Docker!" beginnt. Dann
+ist Docker in WSL nutzbar und ihr könnt zu Schritt 4 weitergehen.
 
-```bash
-groups
-```
-
-Steht dort kein `docker`, hilft `newgrp docker` in der laufenden Sitzung.
-Zuverlässiger ist es, alle Ubuntu-Terminalfenster zu schließen und in
-**PowerShell** diesen Befehl auszuführen:
-
-```powershell
-wsl --shutdown
-```
-
-Danach das Ubuntu-Terminal neu öffnen. Ein bloßes Schließen des
-Terminalfensters reicht bei WSL oft nicht, weil die Distribution im
-Hintergrund weiterläuft.
-
-Funktioniert das, ist Docker in WSL nutzbar.
+> ### 🔧 Wenn es hakt
+>
+> **`The command 'docker' could not be found in this WSL 2 distro`**
+> Docker Desktop läuft nicht. Über das Startmenü starten und warten, bis das
+> Wal-Icon in der Taskleiste erscheint. Danach den Test wiederholen.
+>
+> **`permission denied while trying to connect to the Docker daemon socket`**
+> Die WSL-Integration wurde gerade erst aktiviert, eure schon offene
+> Ubuntu-Sitzung kennt die neue Gruppenmitgliedschaft `docker` noch nicht.
+> Prüfen mit `groups`. Steht dort kein `docker`, hilft in der laufenden
+> Sitzung.
+>
+> ```bash
+> newgrp docker
+> ```
+>
+> Wirkt das nicht, alle Ubuntu-Terminalfenster schließen und in
+> **PowerShell** ausführen:
+>
+> ```powershell
+> wsl --shutdown
+> ```
+>
+> Danach das Ubuntu-Terminal neu öffnen. Ein bloßes Schließen des
+> Terminalfensters reicht bei WSL oft nicht, weil die Distribution im
+> Hintergrund weiterläuft.
 
 ## Schritt 4, Repository klonen
 
@@ -183,6 +224,15 @@ diese Adresse.
 \\wsl$\Ubuntu-24.04\home\<benutzername>\labor-logistische-systeme
 ```
 
+`<benutzername>` ersetzt ihr dabei durch euren **Linux-Benutzernamen**, den
+ihr in Schritt 1 vergeben habt, nicht durch euren Windows-Benutzernamen. Die
+beiden sind unabhängig voneinander und heißen oft unterschiedlich. Wisst ihr
+ihn nicht mehr, zeigt ihn dieser Befehl im Ubuntu-Terminal.
+
+```bash
+whoami
+```
+
 Das ist **dasselbe Verzeichnis**, in dem ihr eben `git clone` ausgeführt
 habt, nur von Windows aus betrachtet. Es gibt die Dateien also nicht
 doppelt. Was ihr im Explorer ändert, sieht das Ubuntu-Terminal sofort und
@@ -197,16 +247,39 @@ müsst ihr sie nicht jedes Mal tippen.
 
 ## Schritt 5, Konfiguration anlegen
 
+Diese Befehle gehören ins Ubuntu-Terminal, und zwar **im
+Repo-Verzeichnis**. Wenn ihr direkt aus Schritt 4 kommt, seid ihr schon
+dort. Zur Sicherheit.
+
 ```bash
+cd ~/labor-logistische-systeme
 cp .env.example .env
 nano .env
 ```
 
-In der Datei die `ROS_DOMAIN_ID` der eigenen Gruppe eintragen. Die Zuordnung
-steht als Kommentar in der Datei. Speichern mit `Strg+O`, schließen mit
-`Strg+X`.
+Damit entsteht die Datei `~/labor-logistische-systeme/.env`. Genau dort muss
+sie liegen, direkt neben der `docker-compose.yml`, sonst findet
+`docker compose` sie nicht. Ihr Name ist `.env`, nicht `env` oder
+`.env.txt`.
 
-Wer mit Simulation arbeitet, setzt zusätzlich `IMAGE_TAG=jazzy-sim`.
+In der Datei sucht ihr diese Zeile.
+
+```dotenv
+ROS_DOMAIN_ID=30
+```
+
+Ersetzt die Zahl durch die ID, die eure Gruppe von der Seminarleitung
+bekommen hat. Die Zuordnung steht zusätzlich als Kommentar direkt darüber in
+der Datei. Speichern mit `Strg+O` und `Enter`, schließen mit `Strg+X`.
+
+Wer mit Simulation arbeitet, ändert außerdem die Zeile `IMAGE_TAG=jazzy-base`
+zu `IMAGE_TAG=jazzy-sim`.
+
+Kontrollieren könnt ihr das Ergebnis mit.
+
+```bash
+grep -v "^#" .env
+```
 
 ## Schritt 6, Image herunterladen
 
@@ -272,8 +345,13 @@ Abschnitt "Grafische Programme starten nicht".
 
 ## Schritt 10, VS Code anbinden, empfohlen
 
-VS Code unter Windows installieren und die Erweiterung **WSL** von Microsoft
-hinzufügen.
+VS Code unter Windows installieren, den Download gibt es hier.
+
+<https://code.visualstudio.com/download>
+
+Danach in VS Code die Erweiterung **WSL** von Microsoft hinzufügen, über das
+Symbol für Erweiterungen in der linken Leiste oder mit `Strg+Shift+X` und
+der Suche nach "WSL".
 
 Der nächste Befehl gehört ins **Ubuntu-Terminal**, nicht ins Container-
 Terminal. Steht euer Prompt noch auf `[seminar] ~/ws$`, verlasst den

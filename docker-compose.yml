@@ -37,6 +37,13 @@ services:
     tty: true
     command: bash
 
+    # Der Hauptprozess des Containers ist eine Shell. Stirbt sie, etwa weil
+    # Docker Desktop neu startet, der Rechner schlafen war oder dem Container
+    # der Arbeitsspeicher ausging, wäre der Container ohne diese Zeile weg und
+    # müsste von Hand neu gestartet werden. "unless-stopped" holt ihn zurück,
+    # respektiert aber ein bewusstes "docker compose stop" oder "down".
+    restart: unless-stopped
+
 volumes:
   ws_build:
   ws_install:

@@ -14,9 +14,20 @@ Im Host-Dateisystem                        Im Container
 labor-logistische-systeme/ws/src/     <-->   /home/ubuntu/ws/src/
 ```
 
-Diese beiden Verzeichnisse sind dasselbe. Ihr könnt also auf dem Host mit
-VS Code editieren und im Container bauen und ausführen. Euer Code überlebt
-jedes Löschen des Containers.
+Diese beiden Verzeichnisse sind dasselbe. Euer Code überlebt damit jedes
+Löschen des Containers.
+
+Daraus ergibt sich die Arbeitsteilung, die euch das ganze Semester
+begleitet.
+
+| Was | Wo | Womit |
+| --- | --- | --- |
+| Dateien schreiben und ändern | auf eurem Rechner | VS Code |
+| Bauen und ausführen | **im Container** | `colcon build`, `ros2 run` |
+
+ROS ist ausschließlich im Container installiert. `colcon` oder `ros2` auf
+eurem Rechner aufzurufen scheitert deshalb mit `command not found`, das ist
+kein Fehler eurer Installation.
 
 **Unter Windows** ist "Host-Dateisystem" das Linux-Dateisystem in WSL, nicht
 das normale Windows-Dateisystem. Die Datei taucht also nicht unter
@@ -40,8 +51,12 @@ Im Container.
 
 ```bash
 cd ~/ws/src
-ros2 pkg create --build-type ament_python mein_paket --dependencies rclpy std_msgs
+ros2 pkg create --build-type ament_python mein_paket \
+  --dependencies rclpy std_msgs --license Apache-2.0
 ```
+
+Ohne `--license` warnt ROS mit `Unknown license 'TODO: License declaration'`.
+Die Warnung ist harmlos, mit der Angabe bleibt die Ausgabe aber sauber.
 
 Es entsteht ein Verzeichnis `mein_paket`. Angelegt habt ihr es im Container,
 sichtbar ist es aber sofort überall, weil `ws/src` nur einmal existiert und
@@ -57,9 +72,16 @@ Das sind drei Sichten auf dieselben Dateien, keine Kopien.
 
 ## Schritt 3, Eine Node schreiben
 
-Am einfachsten in VS Code, siehe `docs/02-setup-windows.md`, Schritt 10
-(unter Linux und macOS analog mit `code .` im Repo-Verzeichnis). Legt darin
-folgende Datei an, sie existiert noch nicht.
+Am einfachsten in VS Code. Wie ihr das für euer System einrichtet, steht in
+eurer Setup-Anleitung.
+
+| System | Abschnitt |
+| --- | --- |
+| Windows | `docs/02-setup-windows.md`, Schritt 10 |
+| macOS | `docs/03-setup-macos.md`, Schritt 5 |
+| Linux | `code .` im Repo-Verzeichnis |
+
+Legt darin folgende Datei an, sie existiert noch nicht.
 
 ```text
 ~/ws/src/mein_paket/mein_paket/hallo_node.py
@@ -134,6 +156,20 @@ Gemeint ist damit: Der Befehl `hallo_node` startet im Modul
 `mein_paket.hallo_node` die Funktion `main`.
 
 ## Schritt 5, Bauen
+
+> **Das passiert im Container, nicht auf eurem Rechner.** Euer Prompt muss
+> `[seminar] ~/ws$` zeigen. Steht dort etwas anderes, seid ihr im
+> Ubuntu-Terminal und müsst erst wieder hinein.
+>
+> ```bash
+> cd ~/labor-logistische-systeme
+> docker compose exec ros bash
+> ```
+
+Editiert habt ihr eure Dateien eben in VS Code auf dem Host. Gebaut und
+ausgeführt wird aber immer im Container, weil nur dort ROS installiert ist.
+Auf dem Host würde `colcon` gar nicht gefunden. Das ist kein Widerspruch,
+beide sehen über `ws/src` dieselben Dateien.
 
 ```bash
 cd ~/ws

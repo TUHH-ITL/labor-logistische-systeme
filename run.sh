@@ -24,12 +24,29 @@ if [ -e /dev/dxg ]; then
   COMPOSE_FILES+=(-f docker-compose.wsl-gpu.yml)
 fi
 
+# Bei den noVNC-Images den Desktop-Port nur auf Loopback veröffentlichen,
+# siehe docker-compose.vnc.yml. Ohne das wäre der passwortlose Desktop im
+# ganzen Netz erreichbar.
+VNC_ACTIVE=0
+IMAGE_TAG_VALUE=$(sed -n 's/^[[:space:]]*IMAGE_TAG[[:space:]]*=[[:space:]]*//p' .env | tail -1 | tr -d '"'\''' | tr -d '[:space:]')
+case "$IMAGE_TAG_VALUE" in
+  *vnc*)
+    COMPOSE_FILES+=(-f docker-compose.vnc.yml)
+    VNC_ACTIVE=1
+    ;;
+esac
+
 # Container starten, falls er nicht schon läuft.
 docker compose "${COMPOSE_FILES[@]}" up -d
 
 echo
 echo "Umgebung läuft. Weitere Terminals öffnen mit:"
 echo "    docker compose exec ros bash"
+if [ "$VNC_ACTIVE" -eq 1 ]; then
+  echo
+  echo "Desktop im Browser öffnen:"
+  echo "    http://localhost:6080/vnc.html"
+fi
 echo
 
 exec docker compose exec ros bash

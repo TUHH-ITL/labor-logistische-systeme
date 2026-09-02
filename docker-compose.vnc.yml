@@ -1,0 +1,22 @@
+# noVNC-Variante, Linux-Desktop im Browser.
+#
+# Diese Datei ergänzt docker-compose.yml und wird von run.sh automatisch
+# geladen, sobald in der .env ein IMAGE_TAG mit "vnc" steht.
+#
+# Zwei Dinge weichen bewusst von der Standardkonfiguration ab.
+#
+# 1. Kein network_mode: host. Der Desktop läuft ohne Passwort, mit
+#    Host-Networking hinge Port 6080 sonst auf allen Netzwerkschnittstellen
+#    und jeder im selben WLAN könnte den Rechner fernsteuern.
+# 2. Die Portfreigabe ist ausdrücklich an 127.0.0.1 gebunden. Damit ist der
+#    Desktop nur vom eigenen Rechner aus erreichbar.
+#
+# Dass DDS ohne Host-Networking keinen echten Roboter im WLAN findet, ist
+# hier kein Verlust. Die noVNC-Variante ist für macOS gedacht, wo das
+# ohnehin nicht funktioniert, siehe docs/03-setup-macos.md.
+
+services:
+  ros:
+    network_mode: bridge
+    ports:
+      - "127.0.0.1:6080:6080"
