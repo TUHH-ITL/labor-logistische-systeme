@@ -54,17 +54,21 @@ ist die Verbindung mit NoMachine zu den Robotern ohnehin für alle der vorgesehe
 
 ## Aufbau des Repositories
 
-```
+```text
 labor-logistische-systeme/
-├── .devcontainer/       devcontainer.json für VS Code Dev Containers
-├── .github/workflows/   build-images.yml, baut und pusht die Images
-├── docker/              Dockerfiles, werden von der CI gebaut
-├── docs/                Anleitungen
-├── ws/src/              hier entsteht euer Code
-├── docker-compose.yml
-├── .env.example         nach .env kopieren
-└── run.sh               Startbefehl
+├── .github/workflows/       build-images.yml, baut und pusht die Images
+├── docker/                  Dockerfiles, werden von der CI gebaut
+├── docs/                    Anleitungen
+├── ws/src/                  hier entsteht euer Code
+├── docker-compose.yml       Grundkonfiguration
+├── docker-compose.vnc.yml   Ergänzung für die noVNC-Variante
+├── docker-compose.wsl-gpu.yml   Ergänzung für GPU unter Windows/WSL
+├── .env.example             nach .env kopieren
+└── run.sh                   Startbefehl
 ```
+
+Die beiden Ergänzungsdateien müsst ihr nicht selbst angeben, `run.sh` lädt
+sie automatisch dazu, wenn sie gebraucht werden.
 
 ---
 
